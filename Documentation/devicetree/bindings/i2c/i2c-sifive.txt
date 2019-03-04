@@ -1,0 +1,30 @@
+SiFive I2C controller Device Tree Bindings
+-------------------------------------------------
+
+Required properties:
+- compatible		: Should be "sifive,i2c0"
+- reg			: Physical base address and size of I2C registers map
+- reg-names		: Should contain the resource reg names.
+- clocks		: Must reference the frequency given to the controller
+- #address-cells	: Must be '1'
+- #size-cells		: Must be '0'
+- clock-frequency	: desired I2C bus clock frequency
+
+Optional properties:
+- interrupts		: Must contain one entry [Currently not working and has workaround]
+- interrupt-parent	: Must be core interrupt controller[Currently not working and hasworkaround]
+
+Example:
+	i2c@10030000 {
+                        compatible = "sifive,i2c0";
+                        reg = <0x0 0x10030000 0x0 0x1000>;
+                        reg-names = "control";
+                        clocks = <&tlclk>;
+			clock-frequency = <100000>;
+
+                        reg-shift = <2>;
+                        reg-io-width = <1>;
+
+                        #address-cells = <1>;
+                        #size-cells = <0>;
+	};
