@@ -301,6 +301,10 @@ static const struct of_device_id ocores_i2c_match[] = {
 		.data = (void *)TYPE_OCORES,
 	},
 	{
+		.compatible = "sifive,i2c0",
+		.data = (void *)TYPE_OCORES,
+	},
+	{
 		.compatible = "aeroflexgaisler,i2cmst",
 		.data = (void *)TYPE_GRLIB,
 	},
