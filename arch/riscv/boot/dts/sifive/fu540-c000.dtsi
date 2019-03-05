@@ -166,6 +166,19 @@
 			reg = <0x0 0x10011000 0x0 0x1000>;
 			clocks = <&prci PRCI_CLK_TLCLK>;
 		};
+		i2c0: i2c@10030000 {
+			compatible = "sifive,i2c0", "opencores,i2c-ocores";
+			reg = <0x0 0x10030000 0x0 0x1000>;
+			reg-names = "i2c-control";
+			clocks = <&prci PRCI_CLK_TLCLK>;
+			clock-frequency = <100000>;
+
+			reg-shift = <2>;
+			reg-io-width = <1>;
+
+			#address-cells = <1>;
+			#size-cells = <0>;
+		};
 		L5: clint@2000000 {
 			compatible = "riscv,clint0";
 			interrupts-extended = <
