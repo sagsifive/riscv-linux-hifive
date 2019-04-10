@@ -85,6 +85,7 @@ struct ocores_i2c {
 
 #define TYPE_OCORES		0
 #define TYPE_GRLIB		1
+#define TYPE_SIFIVE_REV0	2
 
 static void oc_setreg_8(struct ocores_i2c *i2c, int reg, u8 value)
 {
@@ -463,6 +464,10 @@ static const struct of_device_id ocores_i2c_match[] = {
 	{
 		.compatible = "opencores,i2c-ocores",
 		.data = (void *)TYPE_OCORES,
+	},
+	{
+		.compatible = "sifive,fu540-c000-i2c",
+		.data = (void *)TYPE_SIFIVE_REV0,
 	},
 	{
 		.compatible = "aeroflexgaisler,i2cmst",
