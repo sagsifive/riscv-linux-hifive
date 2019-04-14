@@ -28,6 +28,8 @@
 
 #define OCORES_FLAG_POLL BIT(0)
 
+#define SIFIVE_IRQ_POLL BIT(1)
+
 /*
  * 'process_lock' exists because ocores_process() and ocores_process_timeout()
  * can't run in parallel.
@@ -365,13 +367,17 @@ static int ocores_xfer_core(struct ocores_i2c *i2c,
 {
 	int ret;
 	u8 ctrl;
+	u8 stat;
 
 	ctrl = oc_getreg(i2c, OCI2C_CONTROL);
 	if (polling)
 		oc_setreg(i2c, OCI2C_CONTROL, ctrl & ~OCI2C_CTRL_IEN);
-	else
-		oc_setreg(i2c, OCI2C_CONTROL, ctrl | OCI2C_CTRL_IEN);
-
+	else {
+		if (i2c->flags & SIFIVE_IRQ_POLL)
+			oc_setreg(i2c, OCI2C_CONTROL, ctrl & ~OCI2C_CTRL_IEN);
+		else
+			oc_setreg(i2c, OCI2C_CONTROL, ctrl | OCI2C_CTRL_IEN);
+	}
 	i2c->msg = msgs;
 	i2c->pos = 0;
 	i2c->nmsgs = num;
@@ -383,12 +389,31 @@ static int ocores_xfer_core(struct ocores_i2c *i2c,
 	if (polling) {
 		ocores_process_polling(i2c);
 	} else {
-		ret = wait_event_timeout(i2c->wait,
+
+		if (i2c->flags & SIFIVE_IRQ_POLL) {
+			while (i2c->state != STATE_ERROR &&
+					i2c->state != STATE_DONE) {
+				while ((stat = oc_getreg(i2c, OCI2C_STATUS))
+						& OCI2C_STAT_TIP)
+					;
+				ocores_process(i2c, stat);
+			}
+			while ((stat = oc_getreg(i2c, OCI2C_STATUS))
+					& OCI2C_STAT_BUSY)
+				;
+			ocores_process(i2c, stat);
+
+			return (i2c->state == STATE_DONE) ? num : -EIO;
+
+		} else {
+
+			ret = wait_event_timeout(i2c->wait,
 					 (i2c->state == STATE_ERROR) ||
 					 (i2c->state == STATE_DONE), HZ);
-		if (ret == 0) {
-			ocores_process_timeout(i2c);
-			return -ETIMEDOUT;
+			if (ret == 0) {
+				ocores_process_timeout(i2c);
+				return -ETIMEDOUT;
+			}
 		}
 	}
 
@@ -597,6 +622,7 @@ static int ocores_i2c_probe(struct platform_device *pdev)
 {
 	struct ocores_i2c *i2c;
 	struct ocores_i2c_platform_data *pdata;
+	const struct of_device_id *match;
 	struct resource *res;
 	int irq;
 	int ret;
@@ -692,6 +718,10 @@ static int ocores_i2c_probe(struct platform_device *pdev)
 			goto err_clk;
 		}
 	}
+
+	match = of_match_node(ocores_i2c_match, pdev->dev.of_node);
+	if (match && (long)match->data == TYPE_SIFIVE_REV0)
+		i2c->flags |= SIFIVE_IRQ_POLL;
 
 	ret = ocores_init(&pdev->dev, i2c);
 	if (ret)
