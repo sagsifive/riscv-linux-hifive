@@ -4,6 +4,7 @@
 /dts-v1/;
 
 #include <dt-bindings/clock/sifive-fu540-prci.h>
+#include <dt-bindings/gpio/gpio.h>
 
 / {
 	#address-cells = <2>;
@@ -251,11 +252,16 @@
 
 			local-mac-address = [00 00 00 00 00 00];
 			phy-mode = "gmii";
+			phy-handle = <&phy1>;
 			clock-names = "pclk", "hclk", "tx_clk";
 			clocks = <&prci 1>, <&prci 1>, <&gemgxl0>;
 
 			#address-cells = <1>;
 			#size-cells = <0>;
+			phy1: ethernet-phy@0 {
+				reg = <0>;
+				reset-gpios = <&gpio0 12 GPIO_ACTIVE_LOW>;
+			};
 		};
 	};
 };
