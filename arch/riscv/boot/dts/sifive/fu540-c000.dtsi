@@ -259,6 +259,7 @@
 			#address-cells = <1>;
 			#size-cells = <0>;
 			phy1: ethernet-phy@0 {
+				compatible = "ethernet-phy-id0007.0771";
 				reg = <0>;
 				reset-gpios = <&gpio0 12 GPIO_ACTIVE_LOW>;
 			};
