@@ -236,5 +236,26 @@
 			interrupt-controller;
 			#interrupt-cells = <2>;
 		};
+		gemgxl0: cadence-gemgxl-mgmt@100a0000 {
+			compatible = "sifive,cadencegemgxlmgmt0";
+			reg = <0x0 0x100a0000 0x0 0x1000>;
+			reg-names = "control";
+			#clock-cells = <0>;
+		};
+		ethernet0: ethernet@10090000 {
+			compatible = "cdns,macb";
+			interrupt-parent = <&plic0>;
+			interrupts = <53>;
+			reg = <0x0 0x10090000 0x0 0x2000>;
+			reg-names = "control";
+
+			local-mac-address = [00 00 00 00 00 00];
+			phy-mode = "gmii";
+			clock-names = "pclk", "hclk", "tx_clk";
+			clocks = <&prci 1>, <&prci 1>, <&gemgxl0>;
+
+			#address-cells = <1>;
+			#size-cells = <0>;
+		};
 	};
 };
