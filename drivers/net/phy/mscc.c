@@ -260,6 +260,7 @@ enum rgmii_rx_clock_delay {
 #define PHY_ID_VSC8541			  0x00070770
 #define PHY_ID_VSC8574			  0x000704a0
 #define PHY_ID_VSC8584			  0x000707c0
+#define PHY_VSC8541_REVB		  BIT(0)
 
 #define MSCC_VDDMAC_1500		  1500
 #define MSCC_VDDMAC_1800		  1800
@@ -1770,6 +1771,23 @@ static int vsc85xx_config_init(struct phy_device *phydev)
 	return genphy_config_init(phydev);
 }
 
+/**
+ * Perform a reset cycle vsc8541 device.
+ * @phydev: target phy_device struct
+ *
+ * Description: VSC8541 RevB device requires a reset sequence
+ *     of 0-1-0-1 followed by 15 millisecond of minimum wait time.
+ *     This function generates a 0-1 sequence.
+ */
+static void vsc8541_reset(struct phy_device *phydev)
+{
+	mdio_device_reset(&phydev->mdio, 0);
+	mdio_device_reset(&phydev->mdio, 1);
+
+	/* After this pair of reset edges we must wait for min 15ms */
+	mdelay(15);
+}
+
 static int vsc8584_did_interrupt(struct phy_device *phydev)
 {
 	int rc = 0;
@@ -2315,6 +2333,15 @@ static int vsc85xx_probe(struct phy_device *phydev)
 					    sizeof(u64), GFP_KERNEL);
 	if (!vsc8531->stats)
 		return -ENOMEM;
+
+	/* The VSC8541 has an unexpected feature where a
+	 * single reset rising edge can only be used to enter managed mode.
+	 * For unmanaged mode of operation a pair of reset rising edges is
+	 * necessary. Linux phylib provides a reset and here we give additional
+	 * reset sequence to use phy in unmanaged mode.
+	 */
+	if (phydev->phy_id == (PHY_ID_VSC8541 | PHY_VSC8541_REVB))
+		vsc8541_reset(phydev);
 
 	return vsc85xx_dt_led_modes_get(phydev, default_mode);
 }
