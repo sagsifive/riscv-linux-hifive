@@ -82,6 +82,7 @@
 	phy-mode = "gmii";
 	phy-handle = <&phy1>;
 	phy1: ethernet-phy@0 {
+		compatible = "ethernet-phy-id0007.0771";
 		reg = <0>;
 	};
 };
