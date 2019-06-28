@@ -5,6 +5,7 @@
 
 /* Clock frequency (in Hz) of the PCB crystal for rtcclk */
 #define RTCCLK_FREQ		1000000
+#include <dt-bindings/gpio/gpio.h>
 
 / {
 	#address-cells = <2>;
@@ -54,6 +55,10 @@
 	status = "okay";
 };
 
+&gpio0 {
+	status = "okay";
+};
+
 &qspi0 {
 	status = "okay";
 	flash@0 {
@@ -84,5 +89,6 @@
 	phy1: ethernet-phy@0 {
 		compatible = "ethernet-phy-id0007.0771";
 		reg = <0>;
+		reset-gpios = <&gpio0 12 GPIO_ACTIVE_LOW>;
 	};
 };
