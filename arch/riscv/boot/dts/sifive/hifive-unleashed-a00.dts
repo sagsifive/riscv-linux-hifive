@@ -54,6 +54,10 @@
 	status = "okay";
 };
 
+&gpio0 {
+	status = "okay";
+};
+
 &qspi0 {
 	status = "okay";
 	flash@0 {
